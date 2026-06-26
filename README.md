@@ -21,6 +21,10 @@
 </p>
 
 <p align="center">
+  <a href="https://supergokou-housing-price-prediction-app-f1al4m.streamlit.app/"><strong>🚀 Live Demo</strong></a>
+</p>
+
+<p align="center">
   <a href="#-quick-start"><strong>Quick Start</strong></a> ·
   <a href="#-methodology"><strong>Methodology</strong></a> ·
   <a href="#-architecture"><strong>Architecture</strong></a> ·
@@ -30,6 +34,8 @@
 ---
 
 ## 📸 Demo
+
+**▶️ Try it live: [supergokou-housing-price-prediction-app-f1al4m.streamlit.app](https://supergokou-housing-price-prediction-app-f1al4m.streamlit.app/)**
 
 > The screenshots below are the live app rendering the bundled **Seattle, WA** monthly sample (72 points, 2019–2024).
 
@@ -310,14 +316,16 @@ No statsmodels, Prophet, or scikit-learn — every model is a few dozen lines of
 
 ## 🌐 Deploy
 
-This is a standard Streamlit app — deploy free on **Streamlit Community Cloud**:
+> **Live instance:** <https://supergokou-housing-price-prediction-app-f1al4m.streamlit.app/>
+
+This is a standard Streamlit app — deploy your own free on **Streamlit Community Cloud**:
 
 1. Push this repo to GitHub.
 2. Go to [share.streamlit.io](https://share.streamlit.io) → **New app**.
 3. Point it at your repo, set the main file to `app.py`. It auto-installs `requirements.txt`.
 4. Deploy. No secrets or API keys required.
 
-[![Deploy to Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/deploy)
+[![Deploy to Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/deploy?repository=SuperGokou%2Fhousing_price_prediction&branch=main&mainModule=app.py)
 
 ---
 
