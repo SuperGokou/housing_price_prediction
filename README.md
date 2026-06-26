@@ -39,8 +39,13 @@
 
 > The screenshots below are the live app rendering the bundled **Seattle, WA** monthly sample (72 points, 2019–2024).
 
-### Full Application View
-![Full View](img/screenshots/full-view.png)
+### Full Application View — bilingual (中文 / English)
+
+The entire UI switches language from the **语言 / Language** toggle in the sidebar.
+
+| 中文 | English |
+|---|---|
+| ![Chinese UI](img/screenshots/full-view.png) | ![English UI](img/screenshots/full-view-en.png) |
 
 | Multi-Model Forecast | Model Comparison | EDA Metrics |
 |---|---|---|
@@ -52,6 +57,7 @@ The hero chart overlays the price history with all three model paths, the **ense
 
 ## ✨ Features
 
+- **Bilingual UI (中文 / English)** — switch language live from the sidebar; every label, narrative, chart, and model rationale is translated.
 - **CSV Upload** — drop in any city's price history (annual, quarterly, or monthly; frequency auto-detected).
 - **Four-section analysis** — EDA → three independent model forecasts → external-factor reasoning → weighted ensemble, mirroring a real data-scientist workflow.
 - **Three transparent models** — exponential smoothing, log-linear growth, and conservative mean-reversion. No black boxes: every formula is in the code, every forecast is reproducible.

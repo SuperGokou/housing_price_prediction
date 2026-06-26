@@ -18,6 +18,7 @@ from src.core.types import (
     ForecastResult,
     PriceSeries,
 )
+from src.ui.i18n import model_label, t
 
 # Deliberate, distinct palette (one color = one model, reused everywhere).
 COLOR_HISTORY = "#111827"
@@ -56,6 +57,7 @@ def history_and_forecast(
     series: PriceSeries,
     results: list[ForecastResult],
     ensemble: EnsembleResult,
+    lang: str = "zh",
 ) -> go.Figure:
     """History line + each model's forecast path + ensemble cone and band."""
     fig = go.Figure()
@@ -73,11 +75,12 @@ def history_and_forecast(
                              line=dict(width=0), hoverinfo="skip", showlegend=False))
     fig.add_trace(go.Scatter(x=cone_x, y=lower_cone, mode="lines", line=dict(width=0),
                              fill="tonexty", fillcolor=COLOR_SPREAD, hoverinfo="skip",
-                             name="模型分歧区间"))
+                             name=t(lang, "trace_spread")))
 
     # History.
     fig.add_trace(go.Scatter(x=hist_labels, y=hist_vals, mode="lines+markers",
-                             name="历史房价", line=dict(color=COLOR_HISTORY, width=2.5),
+                             name=t(lang, "trace_history"),
+                             line=dict(color=COLOR_HISTORY, width=2.5),
                              marker=dict(size=4)))
 
     # Each model path, anchored to the last actual.
@@ -85,31 +88,33 @@ def history_and_forecast(
         color = MODEL_COLORS.get(r.model_name, "#6B7280")
         fig.add_trace(go.Scatter(
             x=[last_label] + list(r.path_labels), y=[last_val] + list(r.path),
-            mode="lines", name=r.model_name,
+            mode="lines", name=model_label(lang, r.model_name),
             line=dict(color=color, width=1.8, dash="dot")))
 
     # Ensemble path + final interval band.
     ens_path = _ensemble_path(results, ensemble.weights)
     fig.add_trace(go.Scatter(
         x=[last_label] + list(fut_labels), y=[last_val] + ens_path, mode="lines",
-        name="集成预测", line=dict(color=COLOR_ENSEMBLE, width=3.5)))
+        name=t(lang, "trace_ensemble"), line=dict(color=COLOR_ENSEMBLE, width=3.5)))
     fig.add_trace(go.Scatter(
         x=[fut_labels[-1], fut_labels[-1]], y=[ensemble.lower, ensemble.upper],
         mode="lines", line=dict(color=COLOR_ENSEMBLE, width=10),
-        opacity=0.25, name=f"{ensemble.confidence}% 区间"))
+        opacity=0.25, name=t(lang, "trace_interval", conf=ensemble.confidence)))
 
-    title = f"{series.city or '房价'} — 历史走势与下一年多模型预测"
-    fig.update_layout(title=_title(title), yaxis_title="房价 (USD)", **_LAYOUT)
+    title = t(lang, "chart_main_title", city=series.city or t(lang, "default_city"))
+    fig.update_layout(title=_title(title), yaxis_title=t(lang, "chart_price_axis"), **_LAYOUT)
     fig.update_yaxes(tickprefix="$", separatethousands=True)
     return fig
 
 
-def model_comparison(results: list[ForecastResult], ensemble: EnsembleResult) -> go.Figure:
+def model_comparison(results: list[ForecastResult], ensemble: EnsembleResult,
+                     lang: str = "zh") -> go.Figure:
     """Point estimate + interval for each model and the ensemble."""
     fig = go.Figure()
-    rows = [(r.model_name, r.point, r.lower, r.upper,
+    rows = [(model_label(lang, r.model_name), r.point, r.lower, r.upper,
              MODEL_COLORS.get(r.model_name, "#6B7280")) for r in results]
-    rows.append(("集成预测", ensemble.point, ensemble.lower, ensemble.upper, COLOR_ENSEMBLE))
+    rows.append((t(lang, "label_ensemble"), ensemble.point, ensemble.lower,
+                 ensemble.upper, COLOR_ENSEMBLE))
     for name, point, low, high, color in rows:
         fig.add_trace(go.Scatter(
             x=[point], y=[name], mode="markers",
@@ -118,20 +123,20 @@ def model_comparison(results: list[ForecastResult], ensemble: EnsembleResult) ->
                          array=[high - point], arrayminus=[point - low],
                          color=color, thickness=2, width=8),
             name=name, showlegend=False))
-    fig.update_layout(title=_title("各模型点估计与区间对比"),
-                      xaxis_title="+1 年预测房价 (USD)", height=320, **_LAYOUT)
+    fig.update_layout(title=_title(t(lang, "chart_cmp_title")),
+                      xaxis_title=t(lang, "chart_cmp_axis"), height=320, **_LAYOUT)
     fig.update_xaxes(tickprefix="$", separatethousands=True)
     return fig
 
 
-def yoy_growth(insights: EdaInsights) -> go.Figure:
+def yoy_growth(insights: EdaInsights, lang: str = "zh") -> go.Figure:
     """Year-over-year growth bars, colored by sign."""
     fig = go.Figure()
     colors = ["#DC2626" if g < 0 else "#059669" for g in insights.yoy_growth]
     fig.add_trace(go.Bar(x=insights.yoy_labels,
                          y=[g * 100 for g in insights.yoy_growth],
-                         marker_color=colors, name="同比增长"))
-    fig.update_layout(title=_title("同比增长率 (YoY)"), yaxis_title="增长率 (%)",
-                      height=300, **_LAYOUT)
+                         marker_color=colors, name=t(lang, "chart_yoy_title")))
+    fig.update_layout(title=_title(t(lang, "chart_yoy_title")),
+                      yaxis_title=t(lang, "chart_yoy_axis"), height=300, **_LAYOUT)
     fig.update_yaxes(ticksuffix="%")
     return fig

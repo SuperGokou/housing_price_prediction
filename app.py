@@ -2,6 +2,7 @@
 
 Run with:  streamlit run app.py
 Loads the bundled Seattle sample by default, so the first render is a full demo.
+UI language (中文 / English) is chosen in the sidebar.
 """
 
 from __future__ import annotations
@@ -14,30 +15,20 @@ from src.features.external_factors import ExternalFactor, external_factor_analys
 from src.models import exponential_smoothing, growth_curve, mean_reversion
 from src.models.ensemble import combine
 from src.ui import ensemble_section, eda_section, models_section
+from src.ui.i18n import APP_ICON, direction_badge, freq_label, t
 from src.ui.sidebar import render_sidebar
 
 SAMPLE_PATH = "sample_data/seattle.csv"
 
-_DIRECTION_BADGE = {
-    "up": ("⬆️ 上修", "#059669"),
-    "down": ("⬇️ 下修", "#DC2626"),
-    "uncertain": ("↕️ 双向", "#D97706"),
-}
+_DIRECTION_COLOR = {"up": "#059669", "down": "#DC2626", "uncertain": "#D97706"}
 
 
-def _page_header() -> None:
-    st.set_page_config(page_title="房价多模型预测", page_icon="🏠", layout="wide")
-    st.title("🏠 房价多模型预测 · Multi-Model Housing Forecaster")
-    st.markdown(
-        "上传某美国城市过去几年的房价历史，应用以**三种不同逻辑的透明统计模型**推演下一年走势，"
-        "并给出加权**集成预测区间**。")
-
-
-def _render_factors(factors: list[ExternalFactor]) -> None:
-    st.subheader("3 · 潜在外部特征影响 (Feature Engineering)")
+def _render_factors(factors: list[ExternalFactor], lang: str) -> None:
+    st.subheader(t(lang, "sec3_title"))
     cols = st.columns(len(factors))
     for col, f in zip(cols, factors):
-        label, color = _DIRECTION_BADGE.get(f.direction, ("↕️ 双向", "#D97706"))
+        label = direction_badge(lang, f.direction)
+        color = _DIRECTION_COLOR.get(f.direction, "#D97706")
         with col:
             st.markdown(f"##### {f.name}")
             st.markdown(
@@ -48,25 +39,31 @@ def _render_factors(factors: list[ExternalFactor]) -> None:
 
 
 def main() -> None:
-    _page_header()
+    # set_page_config must be the first Streamlit call; tab title stays bilingual.
+    st.set_page_config(page_title="Housing Forecaster · 房价多模型预测",
+                       page_icon=APP_ICON, layout="wide")
+
     state = render_sidebar(SAMPLE_PATH)
+    lang = state.lang
+
+    st.title(f"{APP_ICON} {t(lang, 'app_title')}")
+    st.markdown(t(lang, "subtitle"))
 
     if state.error:
         st.error(state.error)
         st.stop()
     if state.df is None:
-        st.info("请在左侧上传 CSV，或使用内置示例数据。")
+        st.info(t(lang, "err_no_data"))
         st.stop()
 
     try:
         series = build_series(state.df, city=state.city)
     except ValueError as exc:
-        st.error(f"数据校验失败：{exc}")
+        st.error(t(lang, "err_validate", detail=exc))
         st.stop()
 
-    st.caption(
-        f"数据源：{state.source} · 频率：{series.frequency} · "
-        f"{series.n} 个观测点 · 预测步长：{series.horizon} 期（=1 年）")
+    st.caption(t(lang, "data_source", source=state.source,
+                 freq=freq_label(lang, series.frequency), n=series.n, h=series.horizon))
 
     insights = compute_insights(series)
     conf = state.confidence
@@ -77,18 +74,16 @@ def main() -> None:
     ]
     ensemble = combine(series, results, conf)
 
-    eda_section.render(series, insights)
+    eda_section.render(series, insights, lang)
     st.divider()
-    models_section.render(series, results, ensemble)
+    models_section.render(series, results, ensemble, lang)
     st.divider()
-    _render_factors(external_factor_analysis(series, insights))
+    _render_factors(external_factor_analysis(series, insights, lang), lang)
     st.divider()
-    ensemble_section.render(series, ensemble)
+    ensemble_section.render(series, ensemble, lang)
 
     st.divider()
-    st.caption(
-        "免责声明：本工具使用轻量统计方法对小样本进行说明性推演，不构成任何投资、"
-        "购房或财务建议。真实预测需纳入利率、就业、库存等外部变量与更高频数据。")
+    st.caption(t(lang, "disclaimer"))
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-"""Sidebar: city, data source (CSV upload or bundled sample), and settings."""
+"""Sidebar: language, city, data source (CSV upload or sample), and settings."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ import pandas as pd
 import streamlit as st
 
 from src.data.io import read_csv
+from src.ui.i18n import APP_ICON, LANG_OPTIONS, t
 
 # Strip anything that isn't a letter (any language), digit, space, or basic
 # punctuation. Blocks HTML/Markdown-link injection since the city string is
@@ -29,43 +30,46 @@ class SidebarState:
     confidence: int
     source: str
     error: str | None
+    lang: str
 
 
 def render_sidebar(sample_path: str) -> SidebarState:
     """Render sidebar controls and return the chosen configuration."""
-    st.sidebar.markdown("## 🏠 房价多模型预测")
-    st.sidebar.caption("US Housing Price Multi-Model Forecaster")
+    lang_choice = st.sidebar.radio("语言 / Language", options=list(LANG_OPTIONS.keys()),
+                                   horizontal=True)
+    lang = LANG_OPTIONS[lang_choice]
+
+    st.sidebar.markdown(f"## {APP_ICON} {t(lang, 'sidebar_title')}")
+    st.sidebar.caption(t(lang, "sidebar_subtitle"))
     st.sidebar.divider()
 
-    city_raw = st.sidebar.text_input("城市名称", value="Seattle, WA",
-                                     help="仅用于图表与文案展示")
+    city_raw = st.sidebar.text_input(t(lang, "city_label"), value="Seattle, WA",
+                                     help=t(lang, "city_help"))
     city = _sanitize_city(city_raw)
 
-    uploaded = st.sidebar.file_uploader(
-        "上传房价 CSV", type=["csv"],
-        help="需包含日期列与价格列（年/季/月均可）。留空则使用内置 Seattle 示例。")
+    uploaded = st.sidebar.file_uploader(t(lang, "upload_label"), type=["csv"],
+                                        help=t(lang, "upload_help"))
+    st.sidebar.caption(t(lang, "csv_hint"))
 
-    st.sidebar.caption("CSV 示例：`date,price` — 例如 `2023-12-31,760000`")
-
-    confidence = st.sidebar.selectbox("预测区间置信度", options=[80, 90, 95], index=0,
-                                      format_func=lambda c: f"{c}%")
+    confidence = st.sidebar.selectbox(t(lang, "confidence_label"), options=[80, 90, 95],
+                                      index=0, format_func=lambda c: f"{c}%")
 
     df: pd.DataFrame | None = None
     error: str | None = None
     if uploaded is not None:
-        source = "上传文件"
+        source = t(lang, "src_uploaded")
         try:
             df = read_csv(uploaded)
         except ValueError as exc:  # our own controlled, user-facing messages
-            error = f"无法解析上传的 CSV：{exc}"
+            error = t(lang, "err_parse", detail=exc)
         except Exception:  # don't leak pandas/path internals to the UI
             logging.exception("Unexpected error parsing uploaded CSV")
-            error = "无法解析上传的 CSV：文件格式无效，请确认是标准 CSV 文件。"
+            error = t(lang, "err_parse_generic")
     else:
         df = read_csv(sample_path)
-        source = "内置示例 (Seattle, 月度)"
+        source = t(lang, "src_sample")
 
     st.sidebar.divider()
-    st.sidebar.caption("⚠️ 小样本统计推演，仅供研究演示，非投资建议。")
-    return SidebarState(city=city, df=df, confidence=confidence,
-                        source=source, error=error)
+    st.sidebar.caption(t(lang, "sidebar_disclaimer"))
+    return SidebarState(city=city, df=df, confidence=confidence, source=source,
+                        error=error, lang=lang)
