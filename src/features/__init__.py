@@ -1,0 +1,1 @@
+﻿"""External-factor narrative generation."""
