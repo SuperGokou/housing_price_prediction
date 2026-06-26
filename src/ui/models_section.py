@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import streamlit as st
 
 from src.core.types import EnsembleResult, ForecastResult, PriceSeries
@@ -9,7 +11,7 @@ from src.ui.format import fmt_pct, fmt_range, fmt_usd
 from src.viz import charts
 
 
-def _model_card(col, result: ForecastResult, last_value: float) -> None:
+def _model_card(col: Any, result: ForecastResult, last_value: float) -> None:
     change = result.point / last_value - 1
     with col:
         st.markdown(f"##### {result.model_name}")

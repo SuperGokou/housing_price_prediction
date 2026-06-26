@@ -62,6 +62,9 @@ def fit_log_linear(series: PriceSeries) -> LogLinearFit:
     seasonal = _seasonal_component(log_resid, series.periods_per_year, n)
     deseasonal = log_resid - _apply_seasonal(seasonal, np.arange(n), series.periods_per_year)
     std = float(np.std(deseasonal, ddof=1)) if n >= 3 else float(np.std(log_resid))
+    # Floor (log-space ~0.1% relative) so a near-constant series still gets a
+    # sensible band, consistent with the other two models' residual floors.
+    std = max(std, 1e-3)
     return LogLinearFit(a=float(a), b=float(b), log_residual_std=std, seasonal=seasonal)
 
 

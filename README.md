@@ -15,7 +15,7 @@
   <img src="https://img.shields.io/badge/Plotly-6.8-3F4F75?logo=plotly&logoColor=white" alt="Plotly" />
   <img src="https://img.shields.io/badge/NumPy-2.x-013243?logo=numpy&logoColor=white" alt="NumPy" />
   <img src="https://img.shields.io/badge/pandas-3.x-150458?logo=pandas&logoColor=white" alt="pandas" />
-  <img src="https://img.shields.io/badge/tests-109%20passing-2ea44f" alt="Tests" />
+  <img src="https://img.shields.io/badge/tests-111%20passing-2ea44f" alt="Tests" />
   <img src="https://img.shields.io/badge/coverage-85%25-2ea44f" alt="Coverage" />
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="License" />
 </p>
@@ -172,7 +172,7 @@ housing_price_prediction/
 │   ├── features/external_factors.py   # macro-variable narrative
 │   ├── viz/charts.py            # Plotly figure builders
 │   └── ui/                      # Streamlit sections (sidebar, eda, models, ensemble)
-├── tests/                       # 109 pytest cases, 85% coverage
+├── tests/                       # 111 pytest cases, 85% coverage
 └── docs/superpowers/specs/      # design spec
 ```
 
@@ -283,7 +283,7 @@ date,price
 
 ## ✅ Testing
 
-109 deterministic `pytest` cases, 85% overall coverage (95–100% on all non-UI logic):
+111 deterministic `pytest` cases, 85% overall coverage (95–100% on all non-UI logic):
 
 ```bash
 pytest --cov=src --cov-report=term-missing

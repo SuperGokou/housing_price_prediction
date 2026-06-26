@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import re
 from dataclasses import dataclass
 
@@ -58,6 +59,7 @@ def render_sidebar(sample_path: str) -> SidebarState:
         except ValueError as exc:  # our own controlled, user-facing messages
             error = f"无法解析上传的 CSV：{exc}"
         except Exception:  # don't leak pandas/path internals to the UI
+            logging.exception("Unexpected error parsing uploaded CSV")
             error = "无法解析上传的 CSV：文件格式无效，请确认是标准 CSV 文件。"
     else:
         df = read_csv(sample_path)

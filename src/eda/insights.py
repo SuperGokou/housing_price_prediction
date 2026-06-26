@@ -153,7 +153,7 @@ def _trend_r2(values: np.ndarray) -> float:
     if n < 2:
         return 0.0
     t = np.arange(n, dtype=float)
-    log_values = np.log(values)
+    log_values = np.log(np.maximum(values, 1e-9))  # guard non-positive defensively
     total_ss = float(np.sum((log_values - log_values.mean()) ** 2))
     if total_ss == 0.0:
         return 0.0

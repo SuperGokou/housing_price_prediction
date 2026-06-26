@@ -17,14 +17,14 @@ import numpy as np
 
 from src.core.periods import future_labels
 from src.core.types import MODEL_MEAN_REVERSION, Z_SCORES, ForecastResult, PriceSeries
-from src.models.growth_curve import fit_log_linear, trend_value
+from src.models.growth_curve import LogLinearFit, fit_log_linear, trend_value
 
 _THETA_MIN = 0.15
 _THETA_MAX = 0.85
 _THETA_DEFAULT = 0.4
 
 
-def _deviations(series: PriceSeries, fit) -> np.ndarray:
+def _deviations(series: PriceSeries, fit: LogLinearFit) -> np.ndarray:
     """Price minus log-linear fair value at each historical index."""
     ppy = series.periods_per_year
     fair = np.array([trend_value(fit, i, ppy) for i in range(series.n)])
@@ -49,7 +49,7 @@ def _estimate_theta(deviations: np.ndarray) -> float:
     return float(np.clip(theta, _THETA_MIN, _THETA_MAX))
 
 
-def _residual_std(series: PriceSeries, fit, theta: float) -> float:
+def _residual_std(series: PriceSeries, fit: LogLinearFit, theta: float) -> float:
     """Std of one-step reversion residuals, with a small positive floor."""
     values = np.asarray(series.values, dtype=float)
     ppy = series.periods_per_year
@@ -63,7 +63,7 @@ def _residual_std(series: PriceSeries, fit, theta: float) -> float:
     return max(std, floor)
 
 
-def _iterate_path(series: PriceSeries, fit, theta: float) -> list[float]:
+def _iterate_path(series: PriceSeries, fit: LogLinearFit, theta: float) -> list[float]:
     """Walk from last value toward fair value, ``theta`` of the gap each step."""
     ppy = series.periods_per_year
     horizon = series.horizon
